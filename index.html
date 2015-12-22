@@ -1,0 +1,131 @@
+<html>
+<head>
+	<title>Ice Hockey</title>
+</head>
+<style type="text/css">
+	*{
+		margin: 0;
+		padding: 0;
+	}
+	#myCanvas{
+		background: #ddd;
+		display: block;
+		margin: 10px auto;
+	}
+</style>
+<body>
+
+	<canvas id="myCanvas"  height="400" width="1000"></canvas>
+	<script>
+		var canvas=document.getElementById('myCanvas');
+		var ctx=canvas.getContext("2d");
+		var cH=canvas.height;
+		var cW=canvas.width;
+		var paddleHeight=50;
+		var paddleWidth=10;
+		var ballRadius=20;
+		var paddleSpeed=7;
+		var paddleLeftY=(cH-paddleHeight)/2;
+		var paddleRightY=(cH-paddleHeight)/2;
+
+
+		//Ball Drawing
+		var ballX=cW/2;
+		var ballY=cH/2;
+		var ballSpeedX=2;
+		var ballSpeedY=2;
+
+		function ball(){
+			ctx.beginPath();
+			ctx.arc(ballX,ballY,ballRadius,0,Math.PI*2);
+			ctx.fillStyle="#f00";
+			ctx.fill();
+			ctx.closePath();
+			ballX-=ballSpeedX;
+			ballY-=ballSpeedY;
+			if (ballY-ballRadius<0 || ballY+ballRadius>cH) {
+				ballSpeedY=-ballSpeedY;
+			}
+			if(ballY>=paddleLeftY && ballY<=paddleLeftY+paddleHeight && ballX==paddleWidth+ballRadius){
+				ballSpeedX=-ballSpeedX;
+			}
+		}
+
+		//Paddle Left
+		var wPressed=false;
+		var sPressed=false;
+
+		function paddleLeft(){
+			ctx.beginPath();
+			ctx.rect(0,paddleLeftY,paddleWidth,paddleHeight);
+			ctx.fillStyle="#000";
+			ctx.fill();
+			ctx.closePath();
+			if (wPressed && paddleLeftY>0) {
+				// console.log(6);
+				paddleLeftY-=paddleSpeed;
+			} else if (sPressed && paddleLeftY<cH-paddleHeight) {
+				// console.log(4);
+				paddleLeftY+=paddleSpeed;
+			};
+		}
+
+		//Paddle Right
+		var upPressed=false;
+		var downPressed=false;
+
+		function paddleRight(){
+			ctx.beginPath();
+			ctx.rect(cW-paddleWidth,paddleRightY,paddleWidth,paddleHeight);
+			ctx.fillStyle="#00f";
+			ctx.fill();
+			ctx.closePath();
+			if (upPressed && paddleRightY>0) {
+				// console.log(6);
+				paddleRightY-=paddleSpeed;
+			} else if (downPressed && paddleRightY<cH-paddleHeight) {
+				// console.log(4);
+				paddleRightY+=paddleSpeed;
+			};
+		}
+
+		function draw(){
+			ctx.clearRect(0,0,cW,cH);
+			ball();
+			paddleLeft();
+			paddleRight();	
+		}
+		
+		document.addEventListener("keydown",function(e){
+			console.log(e.keyCode);
+			if(e.keyCode==87){
+				wPressed=true;
+			} else if(e.keyCode==83){
+				sPressed=true;
+			} else if (e.keyCode==38) {
+				upPressed=true;
+			} else if (e.keyCode==40) {
+				downPressed=true;
+			}
+
+		});
+
+		document.addEventListener("keyup",function(e){
+			console.log(e.keyCode);
+			if(e.keyCode==87){
+				wPressed=false;
+			} else if(e.keyCode==83){
+				sPressed=false;
+			} else if (e.keyCode==38) {
+				upPressed=false;
+			} else if (e.keyCode==40) {
+				downPressed=false;
+			}
+
+
+		});
+
+		setInterval(draw,10);
+	</script>
+</body>
+</html>
