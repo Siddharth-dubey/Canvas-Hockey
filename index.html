@@ -2,7 +2,7 @@
 <html>
 <head>
 	<title>Ice Hockey</title>
-</head>
+
 <style type="text/css">
 	*{
 		margin: 0;
@@ -22,10 +22,10 @@
 	position: relative;
     width: 1000px;
     height: 100px;
-    margin: 10px auto;
-clear:both;
-    
+    margin: 20px auto;
+clear:both;    
 }
+
 .player1{
 width: 200px;
     float: left;
@@ -48,12 +48,41 @@ width: 200px;
 	font-weight: bold;
     font-size: 38px;
 }
+.btn{
+	    width: 250px;
+    padding: 40px;
+    float: left;
+    margin: 0 175px;
+    background: #DE0D0D;
+    border-style: none;
+    border: none;
+    box-shadow: 0 0 10px #BFB3B3;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: sans-serif;
+    color: #fff;
+    font-size: 18px;
+}
+.btn:hover{
+	background: #D61B1B
+}
+.btn:active{
+	margin-top: 5px;
+	background: #D61C1C;
+	border-style: none;
+}
+.btn:focus{
+	outline: none !important;
+}
 </style>
+</head>
 <body>
 	<div class="scoreBox">
 		<div class="player1"><div class="playerOne"><div class="ptitle">Player 1:</div><span class="score" id="playerOne">0</span></div></div>
+		<button class="btn" id="gameButton">Play</button>
 		<div class="player2"><div class="playerTwo"><div class="ptitle">Player 2:</div><span class="score" id="playerTwo">0</span></div></div>
 	</div>
+
 	<canvas id="myCanvas"  height="400" width="1000"></canvas>
 	<script>
 	
@@ -75,16 +104,13 @@ width: 200px;
 		var scoreP1=0;
 		var scoreP2=0;
 
-
 		//Pitch design
 		function design(){
-
 			ctx.beginPath();
 			ctx.arc(cW/2,cH/2,40,0,Math.PI*2);
 			ctx.strokeStyle="#64C10E";
 			ctx.stroke();
 			ctx.closePath();
-
 			ctx.beginPath();
 			ctx.rect(cW/2,0,1,cH);
 			ctx.fillStyle="#64C10E";
@@ -92,7 +118,6 @@ width: 200px;
 			ctx.closePath();		
 		}
 		
-
 		//Ball Drawing
 		var ballX=cW/2;
 		var ballY=cH/2;
@@ -109,19 +134,19 @@ width: 200px;
 			if (ballY-ballRadius<0 || ballY+ballRadius>cH) {
 				ballSpeedY=-ballSpeedY;
 			}
+
 			if(ballX>cW){
-				ballX=cW/2;
-				ballY=cH/2;
 				scoreP1++;
 				document.getElementById("playerOne").innerHTML=scoreP1;
+				reset();
 			
 			}else if(ballX<0){
 				
 				scoreP2++;
 				document.getElementById("playerTwo").innerHTML=scoreP2;
-				ballY=cH/2;
-				ballX=cW/2;
+				reset();
 			}
+
 			if(ballY+ballRadius>=paddleLeftY && ballY<=paddleLeftY+paddleHeight && ballX==paddleWidth+ballRadius){
 				ballSpeedX=-ballSpeedX;
 				
@@ -130,6 +155,14 @@ width: 200px;
 				ballSpeedX=-ballSpeedX;
 			}
 		}
+
+
+		//Reset
+		function reset () {
+			ballY=cH/2;
+			ballX=cW/2;
+		}
+
 		//Paddle Left
 		var wPressed=false;
 		var sPressed=false;
@@ -147,6 +180,7 @@ width: 200px;
 				paddleLeftY+=paddleSpeed;
 			};
 		}
+
 		//Paddle Right
 		var upPressed=false;
 		var downPressed=false;
@@ -170,16 +204,17 @@ width: 200px;
 		function draw(){
 			ctx.clearRect(0,0,cW,cH);
 			design();
-			console.log("awd");
+			// console.log("awd");
 			ball();
 			paddleLeft();
-			paddleRight();	
+			paddleRight();
+			scoreCheck();	
 		}
 		
 		//Paddles control
 		
 		document.addEventListener("keydown",function(e){
-			console.log(e.keyCode);
+			// console.log(e.keyCode);
 			if(e.keyCode==87){
 				wPressed=true;
 			} else if(e.keyCode==83){
@@ -191,16 +226,17 @@ width: 200px;
 			}
 		});
 
+		//Mouse control  : Not suitable for now
+			//Much better for multiplayer over Sockets
 		document.addEventListener("mousemove",function(e){
 			
 			
-			console.log(e.clientY+'adk'+canvas.offsetTop);
-
+			// console.log(e.clientY+'adk'+canvas.offsetTop);
 						
 		});			
-
+		
 		document.addEventListener("keyup",function(e){
-			console.log(e.keyCode);
+			// console.log(e.keyCode);
 			if(e.keyCode==87){
 				wPressed=false;
 			} else if(e.keyCode==83){
@@ -211,9 +247,52 @@ width: 200px;
 				downPressed=false;
 			}
 		});
-		
-		//Animation
-		setInterval(draw,10);
+
+		//Score Control
+			//..player with first 20 points win
+			function scoreCheck(){
+				if (scoreP1==20) {
+					console.log("p2 wins");
+					resetScore();
+					reset();
+					clearInterval(timerId);
+				} else if(scoreP2==20){
+					resetScore();
+					reset();
+					console.log("p1	 wins");
+					clearInterval(timerId);
+				};
+				
+			}
+
+			//Reset Score
+				function resetScore(){
+					scoreP1=0;
+					scoreP2=0;
+					document.getElementById("playerOne").innerHTML=scoreP1;
+					document.getElementById("playerTwo").innerHTML=scoreP2;
+				}
+
+		//Match Control
+		var button=document.getElementById("gameButton");
+		var buttonState=false;
+		var timerId=0;
+		button.addEventListener("click",function  (e) {
+			buttonState = !buttonState;
+			if (!buttonState) {
+				button.innerHTML="Resume";button.style.background="#DE0D0D";
+				clearInterval(timerId);
+
+			} else{
+				button.innerHTML="Pause";button.style.background="#A77474";
+				
+				//Animation
+				timerId=setInterval(draw,10);
+			};
+			console.log(buttonState);
+		});
+
+		draw();
 		
 	</script>
 </body>
